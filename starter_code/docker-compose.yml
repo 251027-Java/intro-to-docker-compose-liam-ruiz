@@ -1,13 +1,21 @@
 version: '3.8'
 services:
   app:
-    # TODO: Configure build context
+    build: .
     ports:
       - "8080:8080"
-      
+    depends_on: # ensure that the db is up before the app starts
+      db:
+        condition: service_healthy
+
   db:
     image: postgres:13
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: mydb
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
